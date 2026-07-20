@@ -139,6 +139,13 @@
         .input-row { display: flex; gap: 0.75rem; }
         label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
+        .icon-btn {
+            width: 36px !important; height: 36px !important; padding: 0 !important; display: flex !important; align-items: center; justify-content: center;
+            border-radius: 10px !important; background: var(--input-bg) !important; border: 1px solid var(--input-border) !important;
+            color: var(--text-main) !important; font-size: 1.1rem; box-shadow: none !important; transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
         input[type="text"], input[type="number"], input[type="date"], select {
             background: var(--input-bg); border: 1px solid var(--input-border);
             color: var(--text-main); padding: 0.875rem 1rem; border-radius: 14px; font-size: 1rem; outline: none;
@@ -252,14 +259,6 @@
             <span class="step active">2. 멤버</span> ➔ 
             <span class="step" id="step-expense">3. 비용</span> ➔ 
             <span class="step" id="step-settle">4. 정산</span>
-        </div>
-    </div>
-        <div style="display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
-            <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="toggleTheme()" id="theme-toggle-btn">🌙 다크</button>
-            <div style="display: flex; gap: 0.4rem;">
-                <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="startNewEvent()">✨ 새 일정</button>
-                <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="openArchiveModal()">📂 보관함</button>
-            </div>
         </div>
     </div>
 
