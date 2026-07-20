@@ -12,48 +12,48 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        :root {
+                :root {
             /* Light Theme (Default) */
-            --bg-color: #f8fafc;
-            --text-main: #1e293b;
+            --bg-color: #f1f5f9;
+            --text-main: #0f172a;
             --text-muted: #64748b;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
             --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-            --primary: #0088FF;
-            --primary-hover: #0070ea;
-            --danger: #ef4444;
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --danger: #f43f5e;
             --success: #10b981;
-            --radius: 16px;
-            --input-bg: rgba(255, 255, 255, 0.8);
-            --input-border: rgba(0, 0, 0, 0.1);
+            --radius: 20px;
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-border: rgba(0, 0, 0, 0.08);
             --blob-bg: #f8fafc;
             --blob-1: #bae6fd;
             --blob-2: #fed7aa;
             --blob-3: #a7f3d0;
-            --app-bg: rgba(255, 255, 255, 0.4);
-            --header-bg: linear-gradient(to bottom, rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0));
+            --app-bg: rgba(255, 255, 255, 0.5);
+            --header-bg: linear-gradient(to bottom, rgba(241, 245, 249, 0.95), rgba(241, 245, 249, 0));
         }
 
         [data-theme="dark"] {
             --bg-color: #0f172a;
-            --text-main: #ffffff;
-            --text-muted: rgba(255, 255, 255, 0.6);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
             --primary: #3b82f6;
             --primary-hover: #2563eb;
             --danger: #fb7185;
             --success: #34d399;
-            --input-bg: rgba(0, 0, 0, 0.2);
+            --input-bg: rgba(15, 23, 42, 0.6);
             --input-border: rgba(255, 255, 255, 0.1);
             --blob-bg: #0f172a;
             --blob-1: #4f46e5;
             --blob-2: #db2777;
             --blob-3: #0284c7;
-            --app-bg: rgba(15, 23, 42, 0.4);
-            --header-bg: linear-gradient(to bottom, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0));
+            --app-bg: rgba(15, 23, 42, 0.6);
+            --header-bg: linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0));
         }
 
         * {
@@ -128,7 +128,7 @@
 
         .glass-card {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
-            border-radius: var(--radius); padding: 1.5rem;
+            border-radius: var(--radius); padding: 1.75rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             transition: background 0.3s, border-color 0.3s;
         }
@@ -141,7 +141,7 @@
 
         input[type="text"], input[type="number"], input[type="date"], select {
             background: var(--input-bg); border: 1px solid var(--input-border);
-            color: var(--text-main); padding: 0.875rem 1rem; border-radius: 12px; font-size: 1rem; outline: none;
+            color: var(--text-main); padding: 0.875rem 1rem; border-radius: 14px; font-size: 1rem; outline: none;
             transition: all 0.3s ease; width: 100%; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
         }
         input::placeholder { color: var(--text-muted); }
@@ -149,14 +149,18 @@
         input[type="date"]::-webkit-calendar-picker-indicator { filter: var(--calendar-filter, invert(0)); opacity: 0.6; }
         [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
-        button {
-            background: var(--primary); color: white; border: none; padding: 0.875rem 1.5rem; border-radius: 12px;
-            font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%;
+                button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 0.875rem 1.5rem; border-radius: 14px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, filter 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        button:active { transform: scale(0.97); }
-        button:disabled { background: var(--input-border) !important; color: var(--text-muted) !important; cursor: not-allowed; }
-        button.small { width: auto; padding: 0.5rem 1rem; font-size: 0.875rem; border-radius: 8px; }
-        button.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        button:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        button:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+        button:disabled { background: var(--input-border) !important; color: var(--text-muted) !important; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
+        button.small { width: auto; padding: 0.6rem 1.2rem; font-size: 0.875rem; border-radius: 10px; }
+        button.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); box-shadow: none; }
+        button.outline:hover { background: rgba(0,0,0,0.02); }
+        [data-theme="dark"] button.outline:hover { background: rgba(255,255,255,0.05); }
         button.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
         button.success { background: var(--success); color: white; }
 
@@ -185,13 +189,13 @@
         .exp-meta { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
         .exp-details { font-size: 0.8rem; background: var(--input-bg); padding: 0.5rem; border-radius: 8px; color: var(--text-muted); }
 
-        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--input-bg); border-radius: 12px; margin-bottom: 0.5rem; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--input-bg); border-radius: 14px; margin-bottom: 0.5rem; border: 1px solid rgba(16, 185, 129, 0.2); }
         .result-names { font-weight: 600; }
         .result-amount { color: var(--success); font-weight: 800; font-size: 1.1rem; }
 
         .empty-text { text-align: center; font-size: 0.875rem; color: var(--text-muted); padding: 1rem 0; }
 
-        .footer { margin-top: auto; text-align: center; padding: 1.5rem; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--input-border); }
+        .footer { margin-top: auto; text-align: center; padding: 1.75rem; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--input-border); }
         .warning-text { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; line-height: 1.4; border: 1px solid rgba(239, 68, 68, 0.2); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
@@ -225,7 +229,7 @@
         <div style="display: flex; align-items: center; gap: 0.8rem;">
             <!-- Logo Image -->
             <img src="logo.png" alt="트립N빵 로고" style="width: 52px; height: 52px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,136,255,0.2); flex-shrink: 0; object-fit: cover; background-color: #0088FF;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';">
-            <div id="fallback-logo" style="display: none; width: 44px; height: 44px; background: #0088FF; border-radius: 12px; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 10px rgba(0,136,255,0.3); flex-shrink: 0;">
+            <div id="fallback-logo" style="display: none; width: 44px; height: 44px; background: #0088FF; border-radius: 14px; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 10px rgba(0,136,255,0.3); flex-shrink: 0;">
                 ✈️
             </div>
             <div>
@@ -235,6 +239,14 @@
                 <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Smart Travel Expense Splitter</p>
             </div>
         </div>
+        <div style="display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
+            <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="toggleTheme()" id="theme-toggle-btn">🌙 다크</button>
+            <div style="display: flex; gap: 0.4rem;">
+                <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="startNewEvent()">✨ 새 일정</button>
+                <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="openArchiveModal()">📂 보관함</button>
+            </div>
+        </div>
+    </div>
         <div style="display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
             <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="toggleTheme()" id="theme-toggle-btn">🌙 다크</button>
             <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="openArchiveModal()">📂 보관함</button>
@@ -260,35 +272,17 @@
             </div>
         </div>
 
-        <!-- 2. Members -->
+                <!-- 2. Members -->
         <div class="glass-card">
             <div class="card-title">👥 참석 멤버</div>
             
-            <div id="member-setup-step1">
-                <div class="input-row">
-                    <input type="number" id="member-count" placeholder="참석 인원수 (예: 4)" min="1" style="flex:1;">
-                    <button class="small" onclick="generateMemberInputs()">인원 설정</button>
-                </div>
-            </div>
-
-            <div id="member-setup-step2" style="display: none; margin-top: 1rem;">
-                <div id="dynamic-member-inputs" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
-                    <!-- Inputs injected here -->
-                </div>
-                <div class="input-row">
-                    <button class="small outline" style="flex:1;" onclick="resetMemberSetup()">다시 입력</button>
-                    <button class="small" style="flex:2;" onclick="saveMembers()">멤버 확정하기</button>
-                </div>
-            </div>
-
-            <div class="tags-container" id="members-list" style="margin-top: 1rem; display: none;">
+            <div class="tags-container" id="members-list" style="margin-bottom: 1rem;">
                 <!-- Members will appear here -->
             </div>
-            <div id="member-add-more" style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                <div class="input-row">
-                    <input type="text" id="new-member-name" placeholder="추가할 이름 입력" onkeypress="handleMemberKey(event)" style="flex:1; padding: 0.5rem; font-size: 0.875rem;">
-                    <button class="small outline" onclick="addSingleMember()">개별 추가</button>
-                </div>
+            
+            <div class="input-row">
+                <input type="text" id="quick-member-input" placeholder="이름을 입력하고 Enter를 누르세요" onkeypress="handleQuickMemberKey(event)" style="flex:1;">
+                <button class="small" onclick="addQuickMember()" style="width: auto; padding: 0 1rem;">추가</button>
             </div>
         </div>
 
@@ -372,7 +366,7 @@
         
         <!-- Toss Settings Modal -->
         <div id="toss-modal" class="modal-overlay">
-            <div class="glass-card" style="width: 90%; max-width: 400px; padding: 1.5rem;">
+            <div class="glass-card" style="width: 90%; max-width: 400px; padding: 1.75rem;">
                 <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: #fff;">💙 토스 송금 설정</h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
                     송금받을 <strong style="color:var(--primary);" id="toss-receiver-name"></strong>님의 계좌를 한 번만 입력해두면 원클릭 송금이 가능해집니다.
@@ -394,7 +388,7 @@
         
         <!-- Archive Modal -->
         <div id="archive-modal" class="modal-overlay">
-            <div class="glass-card" style="width: 90%; max-width: 400px; padding: 1.5rem; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="glass-card" style="width: 90%; max-width: 400px; padding: 1.75rem; max-height: 85vh; display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="font-size: 1.1rem; color: #fff; margin:0;">📂 데이터 보관함</h3>
                     <button class="small outline" style="border: none; font-size: 1.2rem; padding: 0;" onclick="closeArchiveModal()">✖</button>
@@ -542,58 +536,35 @@
         if (e.key === 'Enter') addSingleMember();
     }
 
-    function generateMemberInputs() {
-        const count = parseInt(document.getElementById('member-count').value);
-        if (isNaN(count) || count <= 0) {
-            alert('올바른 인원수를 입력해주세요.');
-            return;
+    
+    // --- New Event ---
+    function startNewEvent() {
+        if (confirm("새 일정을 시작하시겠습니까? 현재 화면의 정보는 모두 지워집니다.\\n(필요하시다면 먼저 '보관함'에 저장해주세요.)")) {
+            members = [];
+            expenses = [];
+            bankInfo = {};
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-start').value = today;
+            document.getElementById('event-end').value = today;
+            document.getElementById('quick-member-input').value = '';
+            
+            document.getElementById('settlement-result').style.display = 'none';
+            renderMembers();
+            updateVisibility();
+            saveData();
         }
-
-        const container = document.getElementById('dynamic-member-inputs');
-        container.innerHTML = '';
-        for(let i=0; i<count; i++) {
-            container.innerHTML += `
-                <input type="text" class="member-name-input" placeholder="멤버 ${i+1} 이름">
-            `;
-        }
-        
-        document.getElementById('member-setup-step1').style.display = 'none';
-        document.getElementById('member-setup-step2').style.display = 'block';
     }
 
-    function resetMemberSetup() {
-        document.getElementById('member-setup-step1').style.display = 'block';
-        document.getElementById('member-setup-step2').style.display = 'none';
-        document.getElementById('member-count').value = '';
-    }
-
-    function saveMembers() {
-        const inputs = document.querySelectorAll('.member-name-input');
-        let newMembers = [];
-        let hasEmpty = false;
-        
-        inputs.forEach(input => {
-            const val = input.value.trim();
-            if(!val) hasEmpty = true;
-            else if(!newMembers.includes(val) && !members.includes(val)) {
-                newMembers.push(val);
-            }
-        });
-
-        if(hasEmpty) {
-            alert('모든 멤버의 이름을 입력해주세요.');
-            return;
+    // --- Member Management (Quick Add) ---
+    function handleQuickMemberKey(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addQuickMember();
         }
-
-        members = [...members, ...newMembers];
-        
-        renderMembers();
-        updateVisibility();
-        saveData();
     }
 
-    function addSingleMember() {
-        const input = document.getElementById('new-member-name');
+    function addQuickMember() {
+        const input = document.getElementById('quick-member-input');
         const name = input.value.trim();
         
         if (name && !members.includes(name)) {
@@ -602,18 +573,18 @@
             renderMembers();
             updateVisibility();
             saveData();
+            input.focus(); // Keep focus for rapid entry
         } else if (members.includes(name)) {
-            alert('이미 존재하는 이름입니다.');
+            alert('이미 등록된 이름입니다.');
         }
     }
 
     function removeMember(name) {
         const isInvolved = expenses.some(exp => exp.payer === name || exp.participants.includes(name));
         if (isInvolved) {
-            alert('비용 내역에 포함된 멤버는 삭제할 수 없습니다.');
+            alert('비용 내역에 포함된 멤버는 삭제할 수 없습니다. 비용을 먼저 삭제해주세요.');
             return;
         }
-
         members = members.filter(m => m !== name);
         renderMembers();
         updateVisibility();
@@ -623,16 +594,13 @@
     function renderMembers() {
         const list = document.getElementById('members-list');
         list.innerHTML = '';
-
+        
         if (members.length > 0) {
-            document.getElementById('members-list').style.display = 'flex';
-            document.getElementById('member-add-more').style.display = 'block';
-            document.getElementById('member-setup-step1').style.display = 'none';
-            document.getElementById('member-setup-step2').style.display = 'none';
-            
-            members.forEach(name => {
+            list.style.display = 'flex';
+            members.forEach((name, idx) => {
                 const el = document.createElement('div');
                 el.className = 'tag';
+                el.style.animationDelay = `${idx * 0.05}s`;
                 el.innerHTML = `
                     ${name}
                     <button class="tag-remove" onclick="removeMember('${name}')">&times;</button>
@@ -640,27 +608,13 @@
                 list.appendChild(el);
             });
         } else {
-            document.getElementById('members-list').style.display = 'none';
-            document.getElementById('member-add-more').style.display = 'none';
-            document.getElementById('member-setup-step1').style.display = 'block';
-            document.getElementById('member-setup-step2').style.display = 'none';
+            list.style.display = 'none';
         }
-
+        
         renderPayerSelect();
         renderParticipantsCheckboxes();
     }
 
-    function updateVisibility() {
-        const expSec = document.getElementById('expense-section');
-        const setSec = document.getElementById('settlement-section');
-        if (members.length > 0) {
-            expSec.style.display = 'block';
-            setSec.style.display = 'block';
-        } else {
-            expSec.style.display = 'none';
-            setSec.style.display = 'none';
-        }
-    }
 
     // --- Expense Management ---
     function renderPayerSelect() {
