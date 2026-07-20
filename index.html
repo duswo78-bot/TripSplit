@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TripSplit</title>
+    <title>트립N빵 (TripNBang)</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
@@ -481,8 +481,8 @@
 
 <div class="app-container">
     <div class="header">
-        <h1>TripSplit</h1>
-        <p style="font-size: 0.875rem; color: var(--text-muted);">간편하고 예쁜 모바일 정산</p>
+        <h1>트립N빵</h1>
+        <p style="font-size: 0.875rem; color: var(--text-muted);">Smart Travel Expense Splitter</p>
     </div>
 
     <div class="content">
@@ -1115,7 +1115,7 @@
 
     // --- Export Logic ---
     function exportToEmail() {
-        const eventTitle = document.getElementById('event-title').value || 'TripSplit';
+        const eventTitle = document.getElementById('event-title').value || '트립N빵';
         const startDate = document.getElementById('event-start').value;
         const endDate = document.getElementById('event-end').value;
         let dateString = startDate === endDate ? startDate : `${startDate} ~ ${endDate}`;
@@ -1146,7 +1146,7 @@
         body += `\n감사합니다.`;
 
         const formattedBody = body.replace(/\n/g, '\r\n');
-        const subject = encodeURIComponent(`[TripSplit] ${eventTitle} 정산 내역`);
+        const subject = encodeURIComponent(`[트립N빵] ${eventTitle} 정산 내역`);
         const bodyEncoded = encodeURIComponent(formattedBody);
         const mailtoLink = `mailto:?subject=${subject}&body=${bodyEncoded}`;
 
@@ -1154,7 +1154,7 @@
     }
 
     function exportToCSV() {
-        const eventTitle = document.getElementById('event-title').value || 'TripSplit';
+        const eventTitle = document.getElementById('event-title').value || '트립N빵';
         // Add UTF-8 BOM for Excel compatibility with Korean
         let csvContent = '\uFEFF';
         
