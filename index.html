@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비용 정산 (Expense Splitter)</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-color: #10b981;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .event-info {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"], select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-color);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        .section {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button.danger {
+            background: var(--danger-color);
+        }
+        button.danger:hover {
+            background: var(--danger-hover);
+        }
+        
+        button.success {
+            background: var(--success-color);
+        }
+        button.success:hover {
+            background: #059669;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tag button {
+            background: transparent;
+            color: #93c5fd;
+            padding: 0;
+            font-size: 1.25rem;
+            line-height: 1;
+            margin: 0;
+        }
+
+        .tag button:hover {
+            color: var(--danger-color);
+            transform: none;
+        }
+
+        .expense-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .expense-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .expense-card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .expense-card-amount {
+            color: var(--success-color);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .expense-card-details {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .participants-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: auto;
+        }
+
+        .result-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .flex-row {
+                flex-direction: column;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>비용 정산앱</h1>
+        <div class="event-info">
+            <input type="date" id="event-date" aria-label="일정" />
+            <input type="text" id="event-title" placeholder="일정 제목 (예: 여름 휴가)" aria-label="일정 제목" />
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>1. 멤버 추가</h2>
+        <div class="flex-row">
+            <input type="text" id="new-member-name" placeholder="이름 입력" onkeypress="handleMemberKey(event)" />
+            <button onclick="addMember()">추가</button>
+        </div>
+        <div class="tag-list" id="members-list">
+            <!-- Members will appear here -->
+        </div>
+        <p id="member-empty" class="empty-state">먼저 멤버를 추가해주세요.</p>
+    </div>
+
+    <div class="section">
+        <h2>2. 비용 내역 추가</h2>
+        <div id="expense-form" style="display: none;">
+            <div class="flex-row">
+                <input type="text" id="expense-desc" placeholder="결제 내역 (예: 저녁 식사)" />
+                <input type="number" id="expense-amount" placeholder="금액 (원)" />
+            </div>
+            <div class="flex-row">
+                <select id="expense-payer">
+                    <!-- Payers will be populated here -->
+                </select>
+                <div style="flex: 1; color: var(--text-muted); font-size: 0.875rem;">가 결제함</div>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <label style="color: var(--text-muted); font-size: 0.875rem; font-weight: 600;">비용 대상자 (N빵 할 인원들)</label>
+                <div class="participants-selector" id="expense-participants">
+                    <!-- Checkboxes will be populated here -->
+                </div>
+                <div style="margin-top: 0.5rem;">
+                    <button type="button" style="background: transparent; border: 1px solid var(--text-muted); padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="selectAllParticipants()">전체 선택</button>
+                </div>
+            </div>
+
+            <button onclick="addExpense()" style="width: 100%; margin-top: 1.5rem;">비용 등록하기</button>
+        </div>
+        
+        <div id="expenses-list" style="margin-top: 2rem;">
+            <!-- Expenses will appear here -->
+        </div>
+    </div>
+
+    <div class="section" id="settlement-section" style="display: none;">
+        <h2>3. 정산 결과</h2>
+        <button onclick="calculateSettlement()" class="success" style="width: 100%; margin-bottom: 1.5rem;">정산 계산하기</button>
+        
+        <div id="settlement-result" style="display: none;">
+            <div class="result-box" id="settlement-list">
+                <!-- Settlement results will appear here -->
+            </div>
+            
+            <button onclick="exportToEmail()" style="width: 100%; margin-top: 1.5rem; background: #6366f1;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                이메일로 내보내기
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let members = [];
+    let expenses = [];
+
+    // Helper: format currency
+    function formatMoney(amount) {
+        return Math.round(amount).toLocaleString('ko-KR') + '원';
+    }
+
+    // Members Management
+    function handleMemberKey(e) {
+        if (e.key === 'Enter') addMember();
+    }
+
+    function addMember() {
+        const input = document.getElementById('new-member-name');
+        const name = input.value.trim();
+        
+        if (name && !members.includes(name)) {
+            members.push(name);
+            input.value = '';
+            renderMembers();
+            updateExpenseFormVisibility();
+        } else if (members.includes(name)) {
+            alert('이미 존재하는 이름입니다.');
+        }
+    }
+
+    function removeMember(name) {
+        // Check if member is part of any expense
+        const isInvolved = expenses.some(exp => exp.payer === name || exp.participants.includes(name));
+        if (isInvolved) {
+            alert('이 멤버는 이미 등록된 비용 내역에 포함되어 있어 삭제할 수 없습니다.');
+            return;
+        }
+
+        members = members.filter(m => m !== name);
+        renderMembers();
+        updateExpenseFormVisibility();
+    }
+
+    function renderMembers() {
+        const list = document.getElementById('members-list');
+        const emptyState = document.getElementById('member-empty');
+        
+        list.innerHTML = '';
+        if (members.length > 0) {
+            emptyState.style.display = 'none';
+            members.forEach(name => {
+                const el = document.createElement('div');
+                el.className = 'tag';
+                el.innerHTML = `
+                    ${name}
+                    <button onclick="removeMember('${name}')" title="삭제">&times;</button>
+                `;
+                list.appendChild(el);
+            });
+        } else {
+            emptyState.style.display = 'block';
+        }
+
+        renderPayerSelect();
+        renderParticipantsCheckboxes();
+    }
+
+    function updateExpenseFormVisibility() {
+        const form = document.getElementById('expense-form');
+        const settlementSec = document.getElementById('settlement-section');
+        if (members.length > 0) {
+            form.style.display = 'block';
+            settlementSec.style.display = 'block';
+        } else {
+            form.style.display = 'none';
+            settlementSec.style.display = 'none';
+        }
+    }
+
+    // Expense Form
+    function renderPayerSelect() {
+        const select = document.getElementById('expense-payer');
+        const currentVal = select.value;
+        select.innerHTML = '';
+        members.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+        if (members.includes(currentVal)) {
+            select.value = currentVal;
+        }
+    }
+
+    function renderParticipantsCheckboxes() {
+        const container = document.getElementById('expense-participants');
+        container.innerHTML = '';
+        members.forEach(name => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-label';
+            label.innerHTML = `
+                <input type="checkbox" value="${name}" checked />
+                ${name}
+            `;
+            container.appendChild(label);
+        });
+    }
+
+    function selectAllParticipants() {
+        const checkboxes = document.querySelectorAll('#expense-participants input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = true);
+    }
+
+    function addExpense() {
+        const desc = document.getElementById('expense-desc').value.trim();
+        const amount = parseFloat(document.getElementById('expense-amount').value);
+        const payer = document.getElementById('expense-payer').value;
+        
+        const checkboxes = document.querySelectorAll('#expense-participants input[type="checkbox"]:checked');
+        const participants = Array.from(checkboxes).map(cb => cb.value);
+
+        if (!desc) { alert('결제 내역을 입력해주세요.'); return; }
+        if (isNaN(amount) || amount <= 0) { alert('올바른 금액을 입력해주세요.'); return; }
+        if (participants.length === 0) { alert('비용 대상자를 1명 이상 선택해주세요.'); return; }
+
+        expenses.push({
+            id: Date.now(),
+            desc,
+            amount,
+            payer,
+            participants
+        });
+
+        // Reset form
+        document.getElementById('expense-desc').value = '';
+        document.getElementById('expense-amount').value = '';
+        selectAllParticipants();
+
+        renderExpensesList();
+    }
+
+    function removeExpense(id) {
+        expenses = expenses.filter(e => e.id !== id);
+        renderExpensesList();
+        document.getElementById('settlement-result').style.display = 'none'; // hide result to recalculate
+    }
+
+    function renderExpensesList() {
+        const container = document.getElementById('expenses-list');
+        container.innerHTML = '';
+
+        if (expenses.length === 0) return;
+
+        expenses.forEach(exp => {
+            const splitAmount = exp.amount / exp.participants.length;
+            const el = document.createElement('div');
+            el.className = 'expense-card';
+            el.innerHTML = `
+                <div class="expense-card-header">
+                    <div class="expense-card-title">${exp.desc}</div>
+                    <div class="expense-card-amount">${formatMoney(exp.amount)}</div>
+                </div>
+                <div class="expense-card-details">
+                    결제자: ${exp.payer}<br>
+                    대상자: ${exp.participants.join(', ')} (1인당 ${formatMoney(splitAmount)})
+                </div>
+                <button class="danger" style="margin-top: 1rem; padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="removeExpense(${exp.id})">삭제</button>
+            `;
+            container.appendChild(el);
+        });
+    }
+
+    // Settlement Logic
+    let settlementTransactions = [];
+
+    function calculateSettlement() {
+        if (expenses.length === 0) {
+            alert('등록된 비용이 없습니다.');
+            return;
+        }
+
+        // 1. Calculate net balances for each member
+        // Positive balance means they should RECEIVE money
+        // Negative balance means they should PAY money
+        let balances = {};
+        members.forEach(m => balances[m] = 0);
+
+        expenses.forEach(exp => {
+            balances[exp.payer] += exp.amount; // Payer receives full amount
+            
+            const splitAmount = exp.amount / exp.participants.length;
+            exp.participants.forEach(p => {
+                balances[p] -= splitAmount; // Participant pays their share
+            });
+        });
+
+        // 2. Greedy algorithm to settle debts
+        let debtors = [];
+        let creditors = [];
+
+        Object.keys(balances).forEach(m => {
+            if (balances[m] > 0.01) creditors.push({ name: m, amount: balances[m] });
+            else if (balances[m] < -0.01) debtors.push({ name: m, amount: -balances[m] });
+        });
+
+        // Sort both arrays descending by amount to minimize transactions
+        debtors.sort((a, b) => b.amount - a.amount);
+        creditors.sort((a, b) => b.amount - a.amount);
+
+        settlementTransactions = [];
+        let d = 0;
+        let c = 0;
+
+        while (d < debtors.length && c < creditors.length) {
+            let debtor = debtors[d];
+            let creditor = creditors[c];
+            
+            let amount = Math.min(debtor.amount, creditor.amount);
+            
+            settlementTransactions.push({
+                from: debtor.name,
+                to: creditor.name,
+                amount: amount
+            });
+
+            debtor.amount -= amount;
+            creditor.amount -= amount;
+
+            if (debtor.amount < 0.01) d++;
+            if (creditor.amount < 0.01) c++;
+        }
+
+        renderSettlement();
+    }
+
+    function renderSettlement() {
+        const container = document.getElementById('settlement-list');
+        const wrapper = document.getElementById('settlement-result');
+        container.innerHTML = '';
+
+        let totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        
+        let headerHTML = `
+            <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(16, 185, 129, 0.3); padding-bottom: 1rem;">
+                <h3 style="color: var(--success-color);">총 사용 금액: ${formatMoney(totalExpense)}</h3>
+            </div>
+            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-color);">정산 내역 (보낼 돈)</div>
+        `;
+        container.innerHTML = headerHTML;
+
+        if (settlementTransactions.length === 0) {
+            container.innerHTML += `<div class="result-item" style="justify-content: center; color: var(--text-muted);">정산할 금액이 없습니다. (모두 정확히 나누어 냈습니다)</div>`;
+        } else {
+            settlementTransactions.forEach(tx => {
+                const el = document.createElement('div');
+                el.className = 'result-item';
+                el.innerHTML = `
+                    <span><strong>${tx.from}</strong> ➔ <strong>${tx.to}</strong></span>
+                    <span style="color: var(--success-color); font-weight: bold;">${formatMoney(tx.amount)}</span>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        wrapper.style.display = 'block';
+    }
+
+    function exportToEmail() {
+        const eventTitle = document.getElementById('event-title').value || '비용 정산';
+        const eventDate = document.getElementById('event-date').value || new Date().toISOString().split('T')[0];
+        
+        let totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+        let body = `[${eventTitle} - ${eventDate}] 정산 내역입니다.\n\n`;
+        body += `총 사용 금액: ${formatMoney(totalExpense)}\n\n`;
+        
+        body += `--- 결제 내역 ---\n`;
+        expenses.forEach(exp => {
+            body += `- ${exp.desc}: ${formatMoney(exp.amount)} (${exp.payer} 결제 / 대상자: ${exp.participants.join(', ')})\n`;
+        });
+        
+        body += `\n--- 정산 결과 (보낼 돈) ---\n`;
+        if (settlementTransactions.length === 0) {
+            body += `정산할 금액이 없습니다.\n`;
+        } else {
+            settlementTransactions.forEach(tx => {
+                body += `${tx.from} 님이 ${tx.to} 님에게 ${formatMoney(tx.amount)} 송금\n`;
+            });
+        }
+
+        body += `\n감사합니다.`;
+
+        // Create mailto link
+        const subject = encodeURIComponent(`[정산] ${eventTitle} 비용 정산 내역`);
+        const bodyEncoded = encodeURIComponent(body);
+        const mailtoLink = `mailto:?subject=${subject}&body=${bodyEncoded}`;
+
+        window.location.href = mailtoLink;
+    }
+</script>
+
+</body>
+</html>
