@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TripSplit - 비용 정산</title>
+    <title>TripSplit</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
     <style>
         :root {
@@ -820,7 +820,7 @@
     }
 
     function exportToEmail() {
-        const eventTitle = document.getElementById('event-title').value || '비용 정산';
+        const eventTitle = document.getElementById('event-title').value || 'TripSplit';
         const startDate = document.getElementById('event-start').value;
         const endDate = document.getElementById('event-end').value;
         let dateString = startDate === endDate ? startDate : `${startDate} ~ ${endDate}`;
@@ -855,7 +855,7 @@
         // FIX: Replace \n with \r\n for universal mail client compatibility
         const formattedBody = body.replace(/\n/g, '\r\n');
 
-        const subject = encodeURIComponent(`[정산] ${eventTitle} 비용 정산 내역`);
+        const subject = encodeURIComponent(`[TripSplit] ${eventTitle} 정산 내역`);
         const bodyEncoded = encodeURIComponent(formattedBody);
         const mailtoLink = `mailto:?subject=${subject}&body=${bodyEncoded}`;
 
