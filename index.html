@@ -426,6 +426,37 @@
             border: 1px solid rgba(251, 113, 133, 0.2);
         }
 
+        /* Toss Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toss-btn {
+            background: #0050FF;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            border: none;
+            margin-left: auto;
+            width: auto;
+            font-weight: 700;
+        }
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -583,12 +614,34 @@
             </div>
         </div>
         
+        <!-- Toss Settings Modal -->
+        <div id="toss-modal" class="modal-overlay">
+            <div class="glass-card" style="width: 90%; max-width: 400px; padding: 1.5rem;">
+                <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: #fff;">💙 토스 송금 설정</h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    송금받을 <strong style="color:var(--primary);" id="toss-receiver-name"></strong>님의 계좌를 한 번만 입력해두면 원클릭 송금이 가능해집니다.
+                </p>
+                <div class="input-group">
+                    <label>은행명 (예: 국민, 신한, 카카오뱅크)</label>
+                    <input type="text" id="toss-bank-input" placeholder="예: 국민">
+                </div>
+                <div class="input-group">
+                    <label>계좌번호 (숫자만)</label>
+                    <input type="number" id="toss-account-input" placeholder="1234567890">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button class="outline" style="flex:1;" onclick="closeTossModal()">취소</button>
+                    <button style="flex:2; background: #0050FF; font-size: 0.9rem;" onclick="saveTossInfoAndSend()">저장 후 토스 열기</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Footer -->
         <div class="footer">
             <div class="warning-text">
                 ⚠️ <strong>데이터 저장 안내</strong><br>입력된 데이터는 현재 기기(브라우저)에만 임시 저장됩니다. 브라우저 캐시 및 쿠키를 삭제하면 데이터가 초기화될 수 있습니다.
             </div>
-            <div>developed by Park, YeonJae</div>
+            <div>Developed by Park, YeonJae</div>
         </div>
     </div>
 </div>
@@ -605,6 +658,8 @@
     let members = [];
     let expenses = [];
     let settlementTransactions = [];
+    let bankInfo = {};
+    let currentTossTarget = { name: '', amount: 0 };
 
     // Helper: format currency
     function formatMoney(amount) {
@@ -624,7 +679,8 @@
             start: document.getElementById('event-start').value,
             end: document.getElementById('event-end').value,
             members: members,
-            expenses: expenses
+            expenses: expenses,
+            bankInfo: bankInfo
         };
         localStorage.setItem('tripSplitData', JSON.stringify(data));
     }
@@ -640,6 +696,7 @@
                 
                 members = data.members || [];
                 expenses = data.expenses || [];
+                bankInfo = data.bankInfo || {};
                 
                 if (members.length > 0) {
                     renderMembers();
@@ -1029,13 +1086,18 @@
             settlementTransactions.forEach(tx => {
                 const el = document.createElement('div');
                 el.className = 'result-item';
+                el.style.display = 'flex';
+                el.style.alignItems = 'center';
                 el.innerHTML = `
-                    <div class="result-names">
-                        <span>${tx.from}</span>
-                        <span style="color: var(--text-muted); margin: 0 0.5rem;">➔</span>
-                        <span>${tx.to}</span>
+                    <div style="flex:1;">
+                        <div class="result-names">
+                            <span>${tx.from}</span>
+                            <span style="color: var(--text-muted); margin: 0 0.5rem;">➔</span>
+                            <span>${tx.to}</span>
+                        </div>
+                        <div class="result-amount" style="font-size: 1rem;">${formatMoney(tx.amount)}</div>
                     </div>
-                    <div class="result-amount">${formatMoney(tx.amount)}</div>
+                    <button class="toss-btn" onclick="openTossModal('${tx.to}', ${tx.amount})">Toss 송금</button>
                 `;
                 container.appendChild(el);
             });
@@ -1127,6 +1189,45 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    // --- Toss Integration ---
+    function openTossModal(name, amount) {
+        if (bankInfo[name] && bankInfo[name].bank && bankInfo[name].account) {
+            executeTossDeepLink(name, amount);
+        } else {
+            currentTossTarget = { name, amount };
+            document.getElementById('toss-receiver-name').textContent = name;
+            document.getElementById('toss-bank-input').value = '';
+            document.getElementById('toss-account-input').value = '';
+            document.getElementById('toss-modal').classList.add('active');
+        }
+    }
+
+    function closeTossModal() {
+        document.getElementById('toss-modal').classList.remove('active');
+    }
+
+    function saveTossInfoAndSend() {
+        const bank = document.getElementById('toss-bank-input').value.trim();
+        const account = document.getElementById('toss-account-input').value.trim();
+
+        if (!bank || !account) {
+            alert('은행명과 계좌번호를 모두 입력해주세요.');
+            return;
+        }
+
+        bankInfo[currentTossTarget.name] = { bank, account };
+        saveData(); // Save to localStorage
+        closeTossModal();
+        executeTossDeepLink(currentTossTarget.name, currentTossTarget.amount);
+    }
+
+    function executeTossDeepLink(name, amount) {
+        const info = bankInfo[name];
+        if (!info) return;
+        const schemeUrl = `supertoss://send?bank=${encodeURIComponent(info.bank)}&accountNo=${info.account}&amount=${Math.round(amount)}`;
+        window.location.href = schemeUrl;
     }
 </script>
 
