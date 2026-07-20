@@ -2,341 +2,531 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비용 정산 (Expense Splitter)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>TripSplit - 비용 정산</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
     <style>
         :root {
-            --bg-color: #0f172a;
-            --surface-color: #1e293b;
-            --primary-color: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger-color: #ef4444;
-            --danger-hover: #dc2626;
-            --success-color: #10b981;
-            --border-radius: 12px;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --danger: #fb7185;
+            --success: #34d399;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --radius: 16px;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
+            background-color: #0f172a;
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            padding: 2rem;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: var(--surface-color);
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        /* Animated Mesh Gradient Background */
+        .bg-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #0f172a;
         }
 
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: move 20s infinite alternate linear;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: #4f46e5;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: #db2777;
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: #0284c7;
+            top: 40%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 100px) scale(1.1); }
+            100% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+
+        /* Mobile Container */
+        .app-container {
+            width: 100%;
+            max-width: 480px; /* Mobile width constraint */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            border-right: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* Header */
         .header {
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-            padding: 2rem;
+            padding: 2rem 1.5rem 1.5rem;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0));
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .header h1 {
-            font-size: 2rem;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #a5b4fc, #fbcfe8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 0 1.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1rem;
             font-weight: 700;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Form Elements */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             margin-bottom: 1rem;
         }
 
-        .event-info {
+        .input-row {
             display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         input[type="text"], input[type="number"], input[type="date"], select {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-color);
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.875rem 1rem;
+            border-radius: 12px;
             font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
             width: 100%;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
         }
 
         input:focus, select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+        }
+        
+        /* Fix calendar icon color for date inputs */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.6;
         }
 
-        .section {
-            padding: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .section h2 {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        .flex-row {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            align-items: center;
-        }
-
+        /* Buttons */
         button {
-            background: var(--primary-color);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
         }
 
-        button:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.small {
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 8px;
+        }
+
+        button.outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
         }
 
         button.danger {
-            background: var(--danger-color);
-        }
-        button.danger:hover {
-            background: var(--danger-hover);
-        }
-        
-        button.success {
-            background: var(--success-color);
-        }
-        button.success:hover {
-            background: #059669;
+            background: rgba(251, 113, 133, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(251, 113, 133, 0.3);
         }
 
-        .tag-list {
+        button.success {
+            background: var(--success);
+            color: #064e3b;
+        }
+
+        /* Member Tags */
+        .tags-container {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-bottom: 1rem;
         }
 
         .tag {
-            background: rgba(59, 130, 246, 0.2);
-            color: #93c5fd;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 0.5rem 1rem;
-            border-radius: 999px;
+            border-radius: 99px;
             font-size: 0.875rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            animation: fadeIn 0.3s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            animation: zoomIn 0.2s ease-out;
         }
 
-        .tag button {
+        .tag-remove {
             background: transparent;
-            color: #93c5fd;
+            color: var(--text-muted);
+            width: 16px;
+            height: 16px;
             padding: 0;
-            font-size: 1.25rem;
-            line-height: 1;
-            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .tag-remove:active { transform: scale(0.9); }
+
+        /* Participants Checkboxes */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.5rem;
         }
 
-        .tag button:hover {
-            color: var(--danger-color);
-            transform: none;
+        .checkbox-item {
+            position: relative;
+            cursor: pointer;
         }
 
-        .expense-card {
-            background: rgba(15, 23, 42, 0.4);
+        .checkbox-item input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .checkbox-btn {
+            display: block;
+            text-align: center;
+            padding: 0.6rem 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            animation: slideIn 0.3s ease;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            user-select: none;
         }
 
-        .expense-card-header {
+        .checkbox-item input:checked ~ .checkbox-btn {
+            background: rgba(129, 140, 248, 0.2);
+            border-color: var(--primary);
+            color: #a5b4fc;
+        }
+
+        /* Expense List */
+        .expense-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: slideUp 0.3s ease-out;
+        }
+        .expense-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .exp-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+            align-items: flex-start;
+            margin-bottom: 0.25rem;
         }
 
-        .expense-card-title {
+        .exp-title {
             font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .exp-amount {
+            font-weight: 700;
+            color: var(--success);
             font-size: 1.1rem;
         }
 
-        .expense-card-amount {
-            color: var(--success-color);
-            font-weight: 700;
-            font-size: 1.25rem;
-        }
-
-        .expense-card-details {
-            font-size: 0.875rem;
+        .exp-meta {
+            font-size: 0.75rem;
             color: var(--text-muted);
+            margin-bottom: 0.5rem;
         }
 
-        .participants-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            width: auto;
-        }
-
-        .result-box {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+        .exp-details {
+            font-size: 0.8rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
             border-radius: 8px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
+            color: #cbd5e1;
         }
 
+        /* Settlement Results */
         .result-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(52, 211, 153, 0.2);
         }
 
-        .result-item:last-child {
-            border-bottom: none;
+        .result-names {
+            font-weight: 600;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .result-amount {
+            color: var(--success);
+            font-weight: 800;
+            font-size: 1.1rem;
         }
 
-        @keyframes slideIn {
+        .empty-text {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            padding: 1rem 0;
+        }
+
+        @keyframes slideUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .empty-state {
-            text-align: center;
-            color: var(--text-muted);
-            padding: 2rem;
-            font-style: italic;
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        @media (max-width: 600px) {
-            .flex-row {
-                flex-direction: column;
-            }
-            .header h1 {
-                font-size: 1.5rem;
-            }
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<div class="app-container">
     <div class="header">
-        <h1>비용 정산앱</h1>
-        <div class="event-info">
-            <input type="date" id="event-date" aria-label="일정" />
-            <input type="text" id="event-title" placeholder="일정 제목 (예: 여름 휴가)" aria-label="일정 제목" />
-        </div>
+        <h1>TripSplit</h1>
+        <p style="font-size: 0.875rem; color: var(--text-muted);">간편하고 예쁜 모바일 정산</p>
     </div>
 
-    <div class="section">
-        <h2>1. 멤버 추가</h2>
-        <div class="flex-row">
-            <input type="text" id="new-member-name" placeholder="이름 입력" onkeypress="handleMemberKey(event)" />
-            <button onclick="addMember()">추가</button>
-        </div>
-        <div class="tag-list" id="members-list">
-            <!-- Members will appear here -->
-        </div>
-        <p id="member-empty" class="empty-state">먼저 멤버를 추가해주세요.</p>
-    </div>
-
-    <div class="section">
-        <h2>2. 비용 내역 추가</h2>
-        <div id="expense-form" style="display: none;">
-            <div class="flex-row">
-                <input type="text" id="expense-desc" placeholder="결제 내역 (예: 저녁 식사)" />
-                <input type="number" id="expense-amount" placeholder="금액 (원)" />
+    <div class="content">
+        <!-- 1. Event Info -->
+        <div class="glass-card">
+            <div class="card-title">🏕️ 일정 정보</div>
+            <div class="input-group">
+                <input type="text" id="event-title" placeholder="모임/여행 이름 (예: 여름 제주도 여행)">
             </div>
-            <div class="flex-row">
-                <select id="expense-payer">
-                    <!-- Payers will be populated here -->
-                </select>
-                <div style="flex: 1; color: var(--text-muted); font-size: 0.875rem;">가 결제함</div>
-            </div>
-            
-            <div style="margin-top: 1rem;">
-                <label style="color: var(--text-muted); font-size: 0.875rem; font-weight: 600;">비용 대상자 (N빵 할 인원들)</label>
-                <div class="participants-selector" id="expense-participants">
-                    <!-- Checkboxes will be populated here -->
+            <div class="input-row">
+                <div class="input-group" style="flex:1;">
+                    <label>시작일</label>
+                    <input type="date" id="event-start">
                 </div>
-                <div style="margin-top: 0.5rem;">
-                    <button type="button" style="background: transparent; border: 1px solid var(--text-muted); padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="selectAllParticipants()">전체 선택</button>
+                <div class="input-group" style="flex:1;">
+                    <label>종료일</label>
+                    <input type="date" id="event-end">
                 </div>
             </div>
-
-            <button onclick="addExpense()" style="width: 100%; margin-top: 1.5rem;">비용 등록하기</button>
         </div>
-        
-        <div id="expenses-list" style="margin-top: 2rem;">
-            <!-- Expenses will appear here -->
-        </div>
-    </div>
 
-    <div class="section" id="settlement-section" style="display: none;">
-        <h2>3. 정산 결과</h2>
-        <button onclick="calculateSettlement()" class="success" style="width: 100%; margin-bottom: 1.5rem;">정산 계산하기</button>
-        
-        <div id="settlement-result" style="display: none;">
-            <div class="result-box" id="settlement-list">
-                <!-- Settlement results will appear here -->
+        <!-- 2. Members -->
+        <div class="glass-card">
+            <div class="card-title">👥 참석 멤버</div>
+            <div class="input-row">
+                <input type="text" id="new-member-name" placeholder="이름 입력 (엔터)" onkeypress="handleMemberKey(event)" style="flex:1;">
+                <button class="small" onclick="addMember()">추가</button>
             </div>
+            <div class="tags-container" id="members-list" style="margin-top: 1rem;">
+                <!-- Members will appear here -->
+            </div>
+            <div id="member-empty" class="empty-text">먼저 멤버를 추가해주세요.</div>
+        </div>
+
+        <!-- 3. Expenses -->
+        <div class="glass-card" id="expense-section" style="display: none;">
+            <div class="card-title">💳 비용 등록</div>
             
-            <button onclick="exportToEmail()" style="width: 100%; margin-top: 1.5rem; background: #6366f1;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                이메일로 내보내기
-            </button>
+            <div class="input-row">
+                <div class="input-group" style="flex: 1.5;">
+                    <label>날짜</label>
+                    <input type="date" id="expense-date">
+                </div>
+                <div class="input-group" style="flex: 2;">
+                    <label>금액 (원)</label>
+                    <input type="number" id="expense-amount" placeholder="0">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>결제 내역 (어디서?)</label>
+                <input type="text" id="expense-desc" placeholder="예: 흑돼지 고기집">
+            </div>
+
+            <div class="input-group">
+                <label>결제한 사람</label>
+                <select id="expense-payer"></select>
+            </div>
+
+            <div class="input-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="margin:0;">N빵할 대상자</label>
+                    <button class="small outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-width: 1px;" onclick="selectAllParticipants()">전체선택</button>
+                </div>
+                <div class="checkbox-grid" id="expense-participants">
+                    <!-- Checkboxes -->
+                </div>
+            </div>
+
+            <button onclick="addExpense()" style="margin-top: 1rem;">비용 추가하기</button>
+
+            <!-- Expense List -->
+            <div id="expenses-list" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                <!-- Items -->
+            </div>
+        </div>
+
+        <!-- 4. Settlement -->
+        <div class="glass-card" id="settlement-section" style="display: none;">
+            <div class="card-title">🧾 최종 정산</div>
+            <button class="success" onclick="calculateSettlement()">정산 결과 계산하기</button>
+            
+            <div id="settlement-result" style="display: none; margin-top: 1.5rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">총 사용 금액</div>
+                    <div id="total-amount-display" style="font-size: 1.75rem; font-weight: 800; color: white;">0원</div>
+                </div>
+
+                <div id="settlement-list">
+                    <!-- Results -->
+                </div>
+
+                <button onclick="exportToEmail()" style="margin-top: 1.5rem; background: #4f46e5;">
+                    📧 결과 이메일로 공유하기
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -349,6 +539,12 @@
     function formatMoney(amount) {
         return Math.round(amount).toLocaleString('ko-KR') + '원';
     }
+
+    // Default dates
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('event-start').value = today;
+    document.getElementById('event-end').value = today;
+    document.getElementById('expense-date').value = today;
 
     // Members Management
     function handleMemberKey(e) {
@@ -363,23 +559,22 @@
             members.push(name);
             input.value = '';
             renderMembers();
-            updateExpenseFormVisibility();
+            updateVisibility();
         } else if (members.includes(name)) {
             alert('이미 존재하는 이름입니다.');
         }
     }
 
     function removeMember(name) {
-        // Check if member is part of any expense
         const isInvolved = expenses.some(exp => exp.payer === name || exp.participants.includes(name));
         if (isInvolved) {
-            alert('이 멤버는 이미 등록된 비용 내역에 포함되어 있어 삭제할 수 없습니다.');
+            alert('비용 내역에 포함된 멤버는 삭제할 수 없습니다.');
             return;
         }
 
         members = members.filter(m => m !== name);
         renderMembers();
-        updateExpenseFormVisibility();
+        updateVisibility();
     }
 
     function renderMembers() {
@@ -394,7 +589,7 @@
                 el.className = 'tag';
                 el.innerHTML = `
                     ${name}
-                    <button onclick="removeMember('${name}')" title="삭제">&times;</button>
+                    <button class="tag-remove" onclick="removeMember('${name}')">&times;</button>
                 `;
                 list.appendChild(el);
             });
@@ -406,15 +601,15 @@
         renderParticipantsCheckboxes();
     }
 
-    function updateExpenseFormVisibility() {
-        const form = document.getElementById('expense-form');
-        const settlementSec = document.getElementById('settlement-section');
+    function updateVisibility() {
+        const expSec = document.getElementById('expense-section');
+        const setSec = document.getElementById('settlement-section');
         if (members.length > 0) {
-            form.style.display = 'block';
-            settlementSec.style.display = 'block';
+            expSec.style.display = 'block';
+            setSec.style.display = 'block';
         } else {
-            form.style.display = 'none';
-            settlementSec.style.display = 'none';
+            expSec.style.display = 'none';
+            setSec.style.display = 'none';
         }
     }
 
@@ -439,10 +634,10 @@
         container.innerHTML = '';
         members.forEach(name => {
             const label = document.createElement('label');
-            label.className = 'checkbox-label';
+            label.className = 'checkbox-item';
             label.innerHTML = `
                 <input type="checkbox" value="${name}" checked />
-                ${name}
+                <span class="checkbox-btn">${name}</span>
             `;
             container.appendChild(label);
         });
@@ -450,10 +645,12 @@
 
     function selectAllParticipants() {
         const checkboxes = document.querySelectorAll('#expense-participants input[type="checkbox"]');
-        checkboxes.forEach(cb => cb.checked = true);
+        let allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => cb.checked = !allChecked); // Toggle
     }
 
     function addExpense() {
+        const date = document.getElementById('expense-date').value;
         const desc = document.getElementById('expense-desc').value.trim();
         const amount = parseFloat(document.getElementById('expense-amount').value);
         const payer = document.getElementById('expense-payer').value;
@@ -467,50 +664,63 @@
 
         expenses.push({
             id: Date.now(),
+            date,
             desc,
             amount,
             payer,
             participants
         });
 
-        // Reset form
+        // Reset form specifics
         document.getElementById('expense-desc').value = '';
         document.getElementById('expense-amount').value = '';
-        selectAllParticipants();
-
+        
         renderExpensesList();
+        document.getElementById('settlement-result').style.display = 'none';
     }
 
     function removeExpense(id) {
         expenses = expenses.filter(e => e.id !== id);
         renderExpensesList();
-        document.getElementById('settlement-result').style.display = 'none'; // hide result to recalculate
+        document.getElementById('settlement-result').style.display = 'none';
     }
 
     function renderExpensesList() {
         const container = document.getElementById('expenses-list');
         container.innerHTML = '';
 
-        if (expenses.length === 0) return;
+        if (expenses.length === 0) {
+            container.innerHTML = '<div class="empty-text">등록된 비용이 없습니다.</div>';
+            return;
+        }
+
+        // Sort by date ascending
+        expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         expenses.forEach(exp => {
             const splitAmount = exp.amount / exp.participants.length;
             const el = document.createElement('div');
-            el.className = 'expense-card';
+            el.className = 'expense-item';
             el.innerHTML = `
-                <div class="expense-card-header">
-                    <div class="expense-card-title">${exp.desc}</div>
-                    <div class="expense-card-amount">${formatMoney(exp.amount)}</div>
+                <div class="exp-header">
+                    <div>
+                        <div class="exp-meta">📅 ${exp.date}</div>
+                        <div class="exp-title">${exp.desc}</div>
+                    </div>
+                    <div class="exp-amount">${formatMoney(exp.amount)}</div>
                 </div>
-                <div class="expense-card-details">
-                    결제자: ${exp.payer}<br>
-                    대상자: ${exp.participants.join(', ')} (1인당 ${formatMoney(splitAmount)})
+                <div class="exp-details">
+                    <span style="color: var(--primary);">결제:</span> ${exp.payer}<br>
+                    <span style="color: #94a3b8;">대상:</span> ${exp.participants.join(', ')} (1인 ${formatMoney(splitAmount)})
                 </div>
-                <button class="danger" style="margin-top: 1rem; padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="removeExpense(${exp.id})">삭제</button>
+                <button class="small danger" style="margin-top: 0.5rem; width: 100%;" onclick="removeExpense(${exp.id})">삭제</button>
             `;
             container.appendChild(el);
         });
     }
+
+    // Initial render
+    renderExpensesList();
 
     // Settlement Logic
     let settlementTransactions = [];
@@ -521,22 +731,18 @@
             return;
         }
 
-        // 1. Calculate net balances for each member
-        // Positive balance means they should RECEIVE money
-        // Negative balance means they should PAY money
         let balances = {};
         members.forEach(m => balances[m] = 0);
 
         expenses.forEach(exp => {
-            balances[exp.payer] += exp.amount; // Payer receives full amount
+            balances[exp.payer] += exp.amount; // Payer receives
             
             const splitAmount = exp.amount / exp.participants.length;
             exp.participants.forEach(p => {
-                balances[p] -= splitAmount; // Participant pays their share
+                balances[p] -= splitAmount; // Participants pay
             });
         });
 
-        // 2. Greedy algorithm to settle debts
         let debtors = [];
         let creditors = [];
 
@@ -545,7 +751,6 @@
             else if (balances[m] < -0.01) debtors.push({ name: m, amount: -balances[m] });
         });
 
-        // Sort both arrays descending by amount to minimize transactions
         debtors.sort((a, b) => b.amount - a.amount);
         creditors.sort((a, b) => b.amount - a.amount);
 
@@ -578,50 +783,65 @@
     function renderSettlement() {
         const container = document.getElementById('settlement-list');
         const wrapper = document.getElementById('settlement-result');
+        const totalDisplay = document.getElementById('total-amount-display');
+        
         container.innerHTML = '';
 
         let totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-        
-        let headerHTML = `
-            <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(16, 185, 129, 0.3); padding-bottom: 1rem;">
-                <h3 style="color: var(--success-color);">총 사용 금액: ${formatMoney(totalExpense)}</h3>
-            </div>
-            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-color);">정산 내역 (보낼 돈)</div>
-        `;
-        container.innerHTML = headerHTML;
+        totalDisplay.textContent = formatMoney(totalExpense);
 
         if (settlementTransactions.length === 0) {
-            container.innerHTML += `<div class="result-item" style="justify-content: center; color: var(--text-muted);">정산할 금액이 없습니다. (모두 정확히 나누어 냈습니다)</div>`;
+            container.innerHTML = `<div class="empty-text">정산할 금액이 없습니다. (완벽하게 나누어짐!)</div>`;
         } else {
             settlementTransactions.forEach(tx => {
                 const el = document.createElement('div');
                 el.className = 'result-item';
                 el.innerHTML = `
-                    <span><strong>${tx.from}</strong> ➔ <strong>${tx.to}</strong></span>
-                    <span style="color: var(--success-color); font-weight: bold;">${formatMoney(tx.amount)}</span>
+                    <div class="result-names">
+                        <span>${tx.from}</span>
+                        <span style="color: var(--text-muted); margin: 0 0.5rem;">➔</span>
+                        <span>${tx.to}</span>
+                    </div>
+                    <div class="result-amount">${formatMoney(tx.amount)}</div>
                 `;
                 container.appendChild(el);
             });
         }
 
         wrapper.style.display = 'block';
+        
+        // Scroll to bottom
+        setTimeout(() => {
+            document.querySelector('.content').scrollTo({
+                top: document.querySelector('.content').scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
     }
 
     function exportToEmail() {
         const eventTitle = document.getElementById('event-title').value || '비용 정산';
-        const eventDate = document.getElementById('event-date').value || new Date().toISOString().split('T')[0];
+        const startDate = document.getElementById('event-start').value;
+        const endDate = document.getElementById('event-end').value;
+        let dateString = startDate === endDate ? startDate : `${startDate} ~ ${endDate}`;
         
         let totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-        let body = `[${eventTitle} - ${eventDate}] 정산 내역입니다.\n\n`;
+        // Building the body string
+        let body = `[${eventTitle}] 정산 내역입니다.\n`;
+        body += `일정: ${dateString}\n`;
         body += `총 사용 금액: ${formatMoney(totalExpense)}\n\n`;
         
-        body += `--- 결제 내역 ---\n`;
-        expenses.forEach(exp => {
-            body += `- ${exp.desc}: ${formatMoney(exp.amount)} (${exp.payer} 결제 / 대상자: ${exp.participants.join(', ')})\n`;
+        body += `--- 💳 결제 내역 ---\n`;
+        // Sort expenses for email as well
+        let sortedExpenses = [...expenses].sort((a, b) => new Date(a.date) - new Date(b.date));
+        sortedExpenses.forEach(exp => {
+            body += `[${exp.date}] ${exp.desc}: ${formatMoney(exp.amount)}\n`;
+            body += `  - 결제: ${exp.payer}\n`;
+            body += `  - 대상: ${exp.participants.join(', ')}\n`;
         });
         
-        body += `\n--- 정산 결과 (보낼 돈) ---\n`;
+        body += `\n--- 🧾 정산 결과 (보낼 돈) ---\n`;
         if (settlementTransactions.length === 0) {
             body += `정산할 금액이 없습니다.\n`;
         } else {
@@ -632,9 +852,11 @@
 
         body += `\n감사합니다.`;
 
-        // Create mailto link
+        // FIX: Replace \n with \r\n for universal mail client compatibility
+        const formattedBody = body.replace(/\n/g, '\r\n');
+
         const subject = encodeURIComponent(`[정산] ${eventTitle} 비용 정산 내역`);
-        const bodyEncoded = encodeURIComponent(body);
+        const bodyEncoded = encodeURIComponent(formattedBody);
         const mailtoLink = `mailto:?subject=${subject}&body=${bodyEncoded}`;
 
         window.location.href = mailtoLink;
