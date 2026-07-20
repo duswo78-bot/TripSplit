@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>TripSplit</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.08);
@@ -96,7 +97,7 @@
         /* Mobile Container */
         .app-container {
             width: 100%;
-            max-width: 480px; /* Mobile width constraint */
+            max-width: 480px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -203,7 +204,6 @@
             box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
         }
         
-        /* Fix calendar icon color for date inputs */
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             opacity: 0.6;
@@ -229,6 +229,13 @@
 
         button:active {
             transform: scale(0.97);
+        }
+        
+        button:disabled {
+            background: rgba(255,255,255,0.1) !important;
+            color: rgba(255,255,255,0.3) !important;
+            border-color: transparent !important;
+            cursor: not-allowed;
         }
 
         button.small {
@@ -287,7 +294,6 @@
             justify-content: center;
             border-radius: 50%;
         }
-        .tag-remove:active { transform: scale(0.9); }
 
         /* Participants Checkboxes */
         .checkbox-grid {
@@ -400,6 +406,26 @@
             padding: 1rem 0;
         }
 
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .warning-text {
+            background: rgba(251, 113, 133, 0.1);
+            color: #fda4af;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+            border: 1px solid rgba(251, 113, 133, 0.2);
+        }
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -409,17 +435,9 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -441,16 +459,16 @@
         <div class="glass-card">
             <div class="card-title">🏕️ 일정 정보</div>
             <div class="input-group">
-                <input type="text" id="event-title" placeholder="모임/여행 이름 (예: 여름 제주도 여행)">
+                <input type="text" id="event-title" placeholder="모임/여행 이름 (예: 여름 제주도 여행)" onchange="saveData()">
             </div>
             <div class="input-row">
                 <div class="input-group" style="flex:1;">
                     <label>시작일</label>
-                    <input type="date" id="event-start">
+                    <input type="date" id="event-start" onchange="saveData()">
                 </div>
                 <div class="input-group" style="flex:1;">
                     <label>종료일</label>
-                    <input type="date" id="event-end">
+                    <input type="date" id="event-end" onchange="saveData()">
                 </div>
             </div>
         </div>
@@ -491,6 +509,15 @@
         <div class="glass-card" id="expense-section" style="display: none;">
             <div class="card-title">💳 비용 등록</div>
             
+            <!-- OCR Button -->
+            <input type="file" id="ocr-upload" accept="image/*" capture="environment" style="display:none;" onchange="processOCR(event)">
+            <button class="outline" id="ocr-btn" style="margin-bottom: 1rem; border-color: #a855f7; color: #e9d5ff;" onclick="document.getElementById('ocr-upload').click()">
+                📸 영수증 스캔 (스마트 자동입력)
+            </button>
+            <div id="ocr-status" style="display: none; text-align: center; font-size: 0.8rem; color: #d8b4fe; margin-bottom: 1rem; animation: pulse 1.5s infinite;">
+                영수증의 글자를 분석하고 있습니다... 잠시만 기다려주세요 ⏳
+            </div>
+
             <div class="input-row">
                 <div class="input-group" style="flex: 1.5;">
                     <label>날짜</label>
@@ -515,7 +542,7 @@
             <div class="input-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <label style="margin:0;">N빵할 대상자</label>
-                    <button class="small outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-width: 1px;" onclick="selectAllParticipants()">전체선택</button>
+                    <button class="small outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-width: 1px;" onclick="selectAllParticipants()">전체선택/해제</button>
                 </div>
                 <div class="checkbox-grid" id="expense-participants">
                     <!-- Checkboxes -->
@@ -545,17 +572,39 @@
                     <!-- Results -->
                 </div>
 
-                <button onclick="exportToEmail()" style="margin-top: 1.5rem; background: #4f46e5;">
-                    📧 결과 이메일로 공유하기
-                </button>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button onclick="exportToCSV()" style="flex:1; background: #10b981; font-size: 0.875rem;">
+                        📊 엑셀 다운
+                    </button>
+                    <button onclick="exportToEmail()" style="flex:1; background: #4f46e5; font-size: 0.875rem;">
+                        📧 이메일 공유
+                    </button>
+                </div>
             </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="warning-text">
+                ⚠️ <strong>데이터 저장 안내</strong><br>입력된 데이터는 현재 기기(브라우저)에만 임시 저장됩니다. 브라우저 캐시 및 쿠키를 삭제하면 데이터가 초기화될 수 있습니다.
+            </div>
+            <div>developed by Park, YeonJae</div>
         </div>
     </div>
 </div>
 
+<style>
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+</style>
+
 <script>
     let members = [];
     let expenses = [];
+    let settlementTransactions = [];
 
     // Helper: format currency
     function formatMoney(amount) {
@@ -568,7 +617,48 @@
     document.getElementById('event-end').value = today;
     document.getElementById('expense-date').value = today;
 
-    // Members Management
+    // --- Local Storage Data Management ---
+    function saveData() {
+        const data = {
+            title: document.getElementById('event-title').value,
+            start: document.getElementById('event-start').value,
+            end: document.getElementById('event-end').value,
+            members: members,
+            expenses: expenses
+        };
+        localStorage.setItem('tripSplitData', JSON.stringify(data));
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem('tripSplitData');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if (data.title) document.getElementById('event-title').value = data.title;
+                if (data.start) document.getElementById('event-start').value = data.start;
+                if (data.end) document.getElementById('event-end').value = data.end;
+                
+                members = data.members || [];
+                expenses = data.expenses || [];
+                
+                if (members.length > 0) {
+                    renderMembers();
+                    updateVisibility();
+                }
+                if (expenses.length > 0) {
+                    renderExpensesList();
+                }
+            } catch(e) {
+                console.error('데이터 로드 실패', e);
+            }
+        }
+    }
+
+    // Run on init
+    document.addEventListener('DOMContentLoaded', loadData);
+
+
+    // --- Members Management ---
     function handleMemberKey(e) {
         if (e.key === 'Enter') addSingleMember();
     }
@@ -618,13 +708,9 @@
 
         members = [...members, ...newMembers];
         
-        document.getElementById('member-setup-step1').style.display = 'none';
-        document.getElementById('member-setup-step2').style.display = 'none';
-        document.getElementById('members-list').style.display = 'flex';
-        document.getElementById('member-add-more').style.display = 'block';
-        
         renderMembers();
         updateVisibility();
+        saveData();
     }
 
     function addSingleMember() {
@@ -636,6 +722,7 @@
             input.value = '';
             renderMembers();
             updateVisibility();
+            saveData();
         } else if (members.includes(name)) {
             alert('이미 존재하는 이름입니다.');
         }
@@ -651,16 +738,18 @@
         members = members.filter(m => m !== name);
         renderMembers();
         updateVisibility();
+        saveData();
     }
 
     function renderMembers() {
         const list = document.getElementById('members-list');
-        
         list.innerHTML = '';
+
         if (members.length > 0) {
             document.getElementById('members-list').style.display = 'flex';
             document.getElementById('member-add-more').style.display = 'block';
             document.getElementById('member-setup-step1').style.display = 'none';
+            document.getElementById('member-setup-step2').style.display = 'none';
             
             members.forEach(name => {
                 const el = document.createElement('div');
@@ -675,6 +764,7 @@
             document.getElementById('members-list').style.display = 'none';
             document.getElementById('member-add-more').style.display = 'none';
             document.getElementById('member-setup-step1').style.display = 'block';
+            document.getElementById('member-setup-step2').style.display = 'none';
         }
 
         renderPayerSelect();
@@ -693,7 +783,7 @@
         }
     }
 
-    // Expense Form
+    // --- Expense Management ---
     function renderPayerSelect() {
         const select = document.getElementById('expense-payer');
         const currentVal = select.value;
@@ -751,18 +841,20 @@
             participants
         });
 
-        // Reset form specifics
+        // Reset form specific fields
         document.getElementById('expense-desc').value = '';
         document.getElementById('expense-amount').value = '';
         
         renderExpensesList();
         document.getElementById('settlement-result').style.display = 'none';
+        saveData();
     }
 
     function removeExpense(id) {
         expenses = expenses.filter(e => e.id !== id);
         renderExpensesList();
         document.getElementById('settlement-result').style.display = 'none';
+        saveData();
     }
 
     function renderExpensesList() {
@@ -799,12 +891,73 @@
         });
     }
 
-    // Initial render
-    renderExpensesList();
+    // --- Smart OCR (Tesseract.js) ---
+    async function processOCR(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    // Settlement Logic
-    let settlementTransactions = [];
+        const statusEl = document.getElementById('ocr-status');
+        const btn = document.getElementById('ocr-btn');
+        
+        statusEl.style.display = 'block';
+        btn.disabled = true;
+        
+        try {
+            // Load Tesseract
+            const worker = await Tesseract.createWorker('kor+eng');
+            const ret = await worker.recognize(file);
+            const text = ret.data.text;
+            
+            await worker.terminate();
+            
+            // Parsing Logic
+            let foundDate = '';
+            let foundAmount = 0;
+            let foundDesc = '';
 
+            // 1. Date extraction: looks for YYYY-MM-DD or similar formats
+            const dateMatch = text.match(/20\d{2}[-./\s년]+[01]?\d[-./\s월]+[0-3]?\d/);
+            if (dateMatch) {
+                const dStr = dateMatch[0].replace(/[^0-9]/g, '');
+                if(dStr.length === 8) {
+                    foundDate = `${dStr.substring(0,4)}-${dStr.substring(4,6)}-${dStr.substring(6,8)}`;
+                }
+            }
+
+            // 2. Amount extraction: looks for numbers with commas, take the largest
+            const numbers = text.match(/\d{1,3}(,\d{3})+|\d{4,}/g);
+            if (numbers) {
+                const parsedNumbers = numbers.map(n => parseInt(n.replace(/,/g, '')));
+                // Usually the largest number on a receipt is the total amount
+                foundAmount = Math.max(...parsedNumbers);
+            }
+
+            // 3. Store Name extraction: Topmost non-empty line
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+            if (lines.length > 0) {
+                // Take the first line, clean up weird characters
+                foundDesc = lines[0].replace(/[^가-힣a-zA-Z0-9\s]/g, '').trim();
+            }
+
+            // Populate DOM
+            if(foundDate) document.getElementById('expense-date').value = foundDate;
+            if(foundAmount > 0) document.getElementById('expense-amount').value = foundAmount;
+            if(foundDesc) document.getElementById('expense-desc').value = foundDesc;
+            
+            alert(`✅ 영수증 분석 완료!\n추출된 내용을 확인하고 필요시 수정해주세요.\n\n날짜: ${foundDate || '못찾음'}\n금액: ${foundAmount ? formatMoney(foundAmount) : '못찾음'}\n상호: ${foundDesc || '못찾음'}`);
+            
+        } catch(err) {
+            alert('영수증 분석 중 오류가 발생했습니다.');
+            console.error(err);
+        } finally {
+            statusEl.style.display = 'none';
+            btn.disabled = false;
+            e.target.value = ''; // Reset input
+        }
+    }
+
+
+    // --- Settlement Logic ---
     function calculateSettlement() {
         if (expenses.length === 0) {
             alert('등록된 비용이 없습니다.');
@@ -815,11 +968,11 @@
         members.forEach(m => balances[m] = 0);
 
         expenses.forEach(exp => {
-            balances[exp.payer] += exp.amount; // Payer receives
+            balances[exp.payer] += exp.amount;
             
             const splitAmount = exp.amount / exp.participants.length;
             exp.participants.forEach(p => {
-                balances[p] -= splitAmount; // Participants pay
+                balances[p] -= splitAmount;
             });
         });
 
@@ -890,7 +1043,6 @@
 
         wrapper.style.display = 'block';
         
-        // Scroll to bottom
         setTimeout(() => {
             document.querySelector('.content').scrollTo({
                 top: document.querySelector('.content').scrollHeight,
@@ -899,6 +1051,7 @@
         }, 100);
     }
 
+    // --- Export Logic ---
     function exportToEmail() {
         const eventTitle = document.getElementById('event-title').value || 'TripSplit';
         const startDate = document.getElementById('event-start').value;
@@ -907,13 +1060,11 @@
         
         let totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-        // Building the body string
         let body = `[${eventTitle}] 정산 내역입니다.\n`;
         body += `일정: ${dateString}\n`;
         body += `총 사용 금액: ${formatMoney(totalExpense)}\n\n`;
         
         body += `--- 💳 결제 내역 ---\n`;
-        // Sort expenses for email as well
         let sortedExpenses = [...expenses].sort((a, b) => new Date(a.date) - new Date(b.date));
         sortedExpenses.forEach(exp => {
             body += `[${exp.date}] ${exp.desc}: ${formatMoney(exp.amount)}\n`;
@@ -932,14 +1083,50 @@
 
         body += `\n감사합니다.`;
 
-        // FIX: Replace \n with \r\n for universal mail client compatibility
         const formattedBody = body.replace(/\n/g, '\r\n');
-
         const subject = encodeURIComponent(`[TripSplit] ${eventTitle} 정산 내역`);
         const bodyEncoded = encodeURIComponent(formattedBody);
         const mailtoLink = `mailto:?subject=${subject}&body=${bodyEncoded}`;
 
         window.location.href = mailtoLink;
+    }
+
+    function exportToCSV() {
+        const eventTitle = document.getElementById('event-title').value || 'TripSplit';
+        // Add UTF-8 BOM for Excel compatibility with Korean
+        let csvContent = '\uFEFF';
+        
+        csvContent += `일정,${eventTitle}\n`;
+        csvContent += `시작일,${document.getElementById('event-start').value}\n`;
+        csvContent += `종료일,${document.getElementById('event-end').value}\n\n`;
+        
+        csvContent += `[비용 상세 내역]\n`;
+        csvContent += `날짜,결제내역,금액,결제자,N빵 대상자\n`;
+        let sortedExpenses = [...expenses].sort((a, b) => new Date(a.date) - new Date(b.date));
+        sortedExpenses.forEach(exp => {
+            const safeDesc = exp.desc.replace(/"/g, '""');
+            const safeParts = exp.participants.join(', ').replace(/"/g, '""');
+            csvContent += `${exp.date},"${safeDesc}",${exp.amount},${exp.payer},"${safeParts}"\n`;
+        });
+        
+        csvContent += `\n[최종 정산 내역 (보낼 돈)]\n`;
+        csvContent += `보내는 사람,받는 사람,금액\n`;
+        if (settlementTransactions.length === 0) {
+            csvContent += `정산할 내역이 없습니다.\n`;
+        } else {
+            settlementTransactions.forEach(tx => {
+                csvContent += `${tx.from},${tx.to},${tx.amount}\n`;
+            });
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${eventTitle}_정산내역.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 </script>
 
