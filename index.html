@@ -225,20 +225,35 @@
 </div>
 
 <div class="app-container">
-        <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start; text-align: left;">
-        <div style="display: flex; align-items: center; gap: 0.8rem;">
-            <!-- Logo Image -->
-            <img src="logo.png" alt="트립N빵 로고" style="width: 52px; height: 52px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,136,255,0.2); flex-shrink: 0; object-fit: cover; background-color: #0088FF;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';">
-            <div id="fallback-logo" style="display: none; width: 44px; height: 44px; background: #0088FF; border-radius: 14px; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 10px rgba(0,136,255,0.3); flex-shrink: 0;">
-                ✈️
-            </div>
-            <div>
-                <div class="logo-text">
-                    트립<span class="highlight">N</span>빵 <span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 600;">(TripNBang)</span>
+        <div class="header" style="display: flex; flex-direction: column; gap: 0.8rem; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <!-- Logo Image -->
+                <img src="logo.png" alt="트립N빵 로고" style="width: 52px; height: 52px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,136,255,0.2); flex-shrink: 0; object-fit: cover; background-color: #0088FF;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';">
+                <div id="fallback-logo" style="display: none; width: 44px; height: 44px; background: #0088FF; border-radius: 14px; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 10px rgba(0,136,255,0.3); flex-shrink: 0;">
+                    ✈️
                 </div>
-                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Smart Travel Expense Splitter</p>
+                <div>
+                    <div class="logo-text" style="font-size: 1.5rem;">
+                        트립<span class="highlight">N</span>빵 <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">(TripNBang)</span>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; letter-spacing: -0.3px;">Smart Travel Expense Splitter</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.3rem; align-items: flex-start;">
+                <button class="icon-btn" onclick="toggleTheme()" id="theme-toggle-btn" title="테마 변경">🌙</button>
+                <button class="icon-btn" onclick="startNewEvent()" title="새 일정">✨</button>
+                <button class="icon-btn" onclick="openArchiveModal()" title="보관함">📂</button>
             </div>
         </div>
+        <!-- Process Indicator -->
+        <div class="process-indicator">
+            <span class="step active">1. 일정</span> ➔ 
+            <span class="step active">2. 멤버</span> ➔ 
+            <span class="step" id="step-expense">3. 비용</span> ➔ 
+            <span class="step" id="step-settle">4. 정산</span>
+        </div>
+    </div>
         <div style="display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
             <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="toggleTheme()" id="theme-toggle-btn">🌙 다크</button>
             <div style="display: flex; gap: 0.4rem;">
@@ -278,6 +293,9 @@
             <div class="input-row">
                 <input type="text" id="quick-member-input" placeholder="이름을 입력하고 Enter를 누르세요" onkeypress="handleQuickMemberKey(event)" style="flex:1;">
                 <button class="small" onclick="addQuickMember()" style="width: auto; padding: 0 1rem;">추가</button>
+            </div>
+            <div id="next-step-container" style="display: none; margin-top: 1rem; border-top: 1px solid var(--input-border); padding-top: 1rem;">
+                <button onclick="goToExpenses()" style="width: 100%;">비용 입력하기 (다음) ➔</button>
             </div>
         </div>
 
@@ -438,11 +456,7 @@
     function updateThemeBtn(theme) {
         const btn = document.getElementById('theme-toggle-btn');
         if(btn) {
-            if (theme === 'dark') {
-                btn.innerHTML = '☀️ 라이트';
-            } else {
-                btn.innerHTML = '🌙 다크';
-            }
+            btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
         }
     }
 
@@ -524,6 +538,52 @@
 
     // Run on init
     document.addEventListener('DOMContentLoaded', loadData);
+
+    // --- Visibility & Navigation ---
+    function goToExpenses() {
+        if (members.length === 0) {
+            alert('참석 멤버를 먼저 1명 이상 추가해주세요.');
+            return;
+        }
+        document.getElementById('expense-section').style.display = 'block';
+        document.getElementById('step-expense').classList.add('active');
+        setTimeout(() => {
+            document.querySelector('.content').scrollTo({
+                top: document.getElementById('expense-section').offsetTop - 20,
+                behavior: 'smooth'
+            });
+        }, 100);
+        updateVisibility();
+    }
+
+    function updateVisibility() {
+        const expenseSec = document.getElementById('expense-section');
+        const settleSec = document.getElementById('settlement-section');
+        const nextBtn = document.getElementById('next-step-container');
+        
+        if (!expenseSec || !settleSec || !nextBtn) return; // safeguard
+
+        if (members.length > 0) {
+            nextBtn.style.display = 'block';
+        } else {
+            nextBtn.style.display = 'none';
+            expenseSec.style.display = 'none';
+            settleSec.style.display = 'none';
+            document.getElementById('step-expense').classList.remove('active');
+            document.getElementById('step-settle').classList.remove('active');
+        }
+
+        if (expenses.length > 0) {
+            expenseSec.style.display = 'block';
+            settleSec.style.display = 'block';
+            document.getElementById('step-expense').classList.add('active');
+            document.getElementById('step-settle').classList.add('active');
+        } else {
+            settleSec.style.display = 'none';
+            document.getElementById('step-settle').classList.remove('active');
+        }
+    }
+
 
 
     // --- Members Management ---
