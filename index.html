@@ -247,11 +247,6 @@
             </div>
         </div>
     </div>
-        <div style="display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
-            <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="toggleTheme()" id="theme-toggle-btn">🌙 다크</button>
-            <button class="small outline" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.75rem; border-color: var(--input-border); color: var(--text-muted);" onclick="openArchiveModal()">📂 보관함</button>
-        </div>
-    </div>
 
     <div class="content">
         <!-- 1. Event Info -->
@@ -292,10 +287,10 @@
             
             <!-- OCR Button -->
             <input type="file" id="ocr-upload" accept="image/*" capture="environment" style="display:none;" onchange="processOCR(event)">
-            <button class="outline" id="ocr-btn" style="margin-bottom: 1rem; border-color: #a855f7; color: #e9d5ff;" onclick="document.getElementById('ocr-upload').click()">
+            <button class="outline" id="ocr-btn" style="margin-bottom: 1rem; border-color: #a855f7; color: #a855f7;" onclick="document.getElementById('ocr-upload').click()">
                 📸 영수증 스캔 (스마트 자동입력)
             </button>
-            <div id="ocr-status" style="display: none; text-align: center; font-size: 0.8rem; color: #d8b4fe; margin-bottom: 1rem; animation: pulse 1.5s infinite;">
+            <div id="ocr-status" style="display: none; text-align: center; font-size: 0.8rem; color: #a855f7; margin-bottom: 1rem; animation: pulse 1.5s infinite;">
                 영수증의 글자를 분석하고 있습니다... 잠시만 기다려주세요 ⏳
             </div>
 
@@ -346,7 +341,7 @@
             <div id="settlement-result" style="display: none; margin-top: 1.5rem;">
                 <div style="text-align: center; margin-bottom: 1.5rem;">
                     <div style="font-size: 0.875rem; color: var(--text-muted);">총 사용 금액</div>
-                    <div id="total-amount-display" style="font-size: 1.75rem; font-weight: 800; color: white;">0원</div>
+                    <div id="total-amount-display" style="font-size: 1.75rem; font-weight: 800; color: var(--text-main);">0원</div>
                 </div>
 
                 <div id="settlement-list">
@@ -367,7 +362,7 @@
         <!-- Toss Settings Modal -->
         <div id="toss-modal" class="modal-overlay">
             <div class="glass-card" style="width: 90%; max-width: 400px; padding: 1.75rem;">
-                <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: #fff;">💙 토스 송금 설정</h3>
+                <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-main);">💙 토스 송금 설정</h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
                     송금받을 <strong style="color:var(--primary);" id="toss-receiver-name"></strong>님의 계좌를 한 번만 입력해두면 원클릭 송금이 가능해집니다.
                 </p>
@@ -390,7 +385,7 @@
         <div id="archive-modal" class="modal-overlay">
             <div class="glass-card" style="width: 90%; max-width: 400px; padding: 1.75rem; max-height: 85vh; display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1.1rem; color: #fff; margin:0;">📂 데이터 보관함</h3>
+                    <h3 style="font-size: 1.1rem; color: var(--text-main); margin:0;">📂 데이터 보관함</h3>
                     <button class="small outline" style="border: none; font-size: 1.2rem; padding: 0;" onclick="closeArchiveModal()">✖</button>
                 </div>
                 
@@ -539,7 +534,7 @@
     
     // --- New Event ---
     function startNewEvent() {
-        if (confirm("새 일정을 시작하시겠습니까? 현재 화면의 정보는 모두 지워집니다.\\n(필요하시다면 먼저 '보관함'에 저장해주세요.)")) {
+        if (confirm("새 일정을 시작하시겠습니까? 현재 화면의 정보는 모두 지워집니다.\n(필요하시다면 먼저 '보관함'에 저장해주세요.)")) {
             members = [];
             expenses = [];
             bankInfo = {};
@@ -1020,7 +1015,7 @@
     }
 
     function loadArchiveData(id) {
-        if (!confirm('현재 작업 중인 화면을 지우고 이 일정을 불러오시겠습니까?\\n(현재 내용을 보관하려면 먼저 저장 버튼을 누르세요)')) return;
+        if (!confirm('현재 작업 중인 화면을 지우고 이 일정을 불러오시겠습니까?\n(현재 내용을 보관하려면 먼저 저장 버튼을 누르세요)')) return;
         const arc = savedArchives.find(a => a.id === id);
         if(!arc) return;
 
@@ -1032,21 +1027,12 @@
         expenses = arc.expenses || [];
         bankInfo = arc.bankInfo || {};
 
-        if (members.length > 0) {
-            renderMembers();
-            updateVisibility();
-        } else {
-            document.getElementById('members-list').style.display = 'none';
-            document.getElementById('member-add-more').style.display = 'none';
-            document.getElementById('member-setup-step1').style.display = 'block';
-            document.getElementById('member-setup-step2').style.display = 'none';
-            updateVisibility();
-        }
-
+        renderMembers();
+        updateVisibility();
         renderExpensesList();
         document.getElementById('settlement-result').style.display = 'none';
         
-        saveData(); // Save to auto-save working draft
+        saveData();
         closeArchiveModal();
         alert(`'${arc.title}' 일정을 불러왔습니다.`);
     }
