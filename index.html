@@ -455,14 +455,33 @@
         <!-- 2. Members -->
         <div class="glass-card">
             <div class="card-title">👥 참석 멤버</div>
-            <div class="input-row">
-                <input type="text" id="new-member-name" placeholder="이름 입력 (엔터)" onkeypress="handleMemberKey(event)" style="flex:1;">
-                <button class="small" onclick="addMember()">추가</button>
+            
+            <div id="member-setup-step1">
+                <div class="input-row">
+                    <input type="number" id="member-count" placeholder="참석 인원수 (예: 4)" min="1" style="flex:1;">
+                    <button class="small" onclick="generateMemberInputs()">인원 설정</button>
+                </div>
             </div>
-            <div class="tags-container" id="members-list" style="margin-top: 1rem;">
+
+            <div id="member-setup-step2" style="display: none; margin-top: 1rem;">
+                <div id="dynamic-member-inputs" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                    <!-- Inputs injected here -->
+                </div>
+                <div class="input-row">
+                    <button class="small outline" style="flex:1;" onclick="resetMemberSetup()">다시 입력</button>
+                    <button class="small" style="flex:2;" onclick="saveMembers()">멤버 확정하기</button>
+                </div>
+            </div>
+
+            <div class="tags-container" id="members-list" style="margin-top: 1rem; display: none;">
                 <!-- Members will appear here -->
             </div>
-            <div id="member-empty" class="empty-text">먼저 멤버를 추가해주세요.</div>
+            <div id="member-add-more" style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                <div class="input-row">
+                    <input type="text" id="new-member-name" placeholder="추가할 이름 입력" onkeypress="handleMemberKey(event)" style="flex:1; padding: 0.5rem; font-size: 0.875rem;">
+                    <button class="small outline" onclick="addSingleMember()">개별 추가</button>
+                </div>
+            </div>
         </div>
 
         <!-- 3. Expenses -->
@@ -548,10 +567,64 @@
 
     // Members Management
     function handleMemberKey(e) {
-        if (e.key === 'Enter') addMember();
+        if (e.key === 'Enter') addSingleMember();
     }
 
-    function addMember() {
+    function generateMemberInputs() {
+        const count = parseInt(document.getElementById('member-count').value);
+        if (isNaN(count) || count <= 0) {
+            alert('올바른 인원수를 입력해주세요.');
+            return;
+        }
+
+        const container = document.getElementById('dynamic-member-inputs');
+        container.innerHTML = '';
+        for(let i=0; i<count; i++) {
+            container.innerHTML += `
+                <input type="text" class="member-name-input" placeholder="멤버 ${i+1} 이름">
+            `;
+        }
+        
+        document.getElementById('member-setup-step1').style.display = 'none';
+        document.getElementById('member-setup-step2').style.display = 'block';
+    }
+
+    function resetMemberSetup() {
+        document.getElementById('member-setup-step1').style.display = 'block';
+        document.getElementById('member-setup-step2').style.display = 'none';
+        document.getElementById('member-count').value = '';
+    }
+
+    function saveMembers() {
+        const inputs = document.querySelectorAll('.member-name-input');
+        let newMembers = [];
+        let hasEmpty = false;
+        
+        inputs.forEach(input => {
+            const val = input.value.trim();
+            if(!val) hasEmpty = true;
+            else if(!newMembers.includes(val) && !members.includes(val)) {
+                newMembers.push(val);
+            }
+        });
+
+        if(hasEmpty) {
+            alert('모든 멤버의 이름을 입력해주세요.');
+            return;
+        }
+
+        members = [...members, ...newMembers];
+        
+        document.getElementById('member-setup-step1').style.display = 'none';
+        document.getElementById('member-setup-step2').style.display = 'none';
+        document.getElementById('members-list').style.display = 'flex';
+        document.getElementById('member-add-more').style.display = 'block';
+        
+        renderMembers();
+        updateVisibility();
+    }
+
+    function addSingleMember() {
         const input = document.getElementById('new-member-name');
         const name = input.value.trim();
         
@@ -579,11 +652,13 @@
 
     function renderMembers() {
         const list = document.getElementById('members-list');
-        const emptyState = document.getElementById('member-empty');
         
         list.innerHTML = '';
         if (members.length > 0) {
-            emptyState.style.display = 'none';
+            document.getElementById('members-list').style.display = 'flex';
+            document.getElementById('member-add-more').style.display = 'block';
+            document.getElementById('member-setup-step1').style.display = 'none';
+            
             members.forEach(name => {
                 const el = document.createElement('div');
                 el.className = 'tag';
@@ -594,7 +669,9 @@
                 list.appendChild(el);
             });
         } else {
-            emptyState.style.display = 'block';
+            document.getElementById('members-list').style.display = 'none';
+            document.getElementById('member-add-more').style.display = 'none';
+            document.getElementById('member-setup-step1').style.display = 'block';
         }
 
         renderPayerSelect();
